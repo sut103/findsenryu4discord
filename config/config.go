@@ -26,6 +26,14 @@ type Config struct {
 	Admin    AdminConfig    `koanf:"admin"`
 	Server   ServerConfig   `koanf:"server"`
 	Backup   BackupConfig   `koanf:"backup"`
+	Gemini   GeminiConfig   `koanf:"gemini"`
+}
+
+// GeminiConfig holds Gemini API configuration
+type GeminiConfig struct {
+	APIKey       string `koanf:"api_key"`
+	Model        string `koanf:"model"`
+	SystemPrompt string `koanf:"system_prompt"`
 }
 
 // DiscordConfig holds Discord-related configuration
@@ -134,6 +142,12 @@ func setDefaults(c *Config) {
 	}
 	if c.Backup.MaxBackups == 0 {
 		c.Backup.MaxBackups = 7
+	}
+	if c.Gemini.Model == "" {
+		c.Gemini.Model = "gemini-2.5-flash"
+	}
+	if c.Gemini.SystemPrompt == "" {
+		c.Gemini.SystemPrompt = "あなたは毒舌かつユーモアのある俳句・川柳の審査員です。入力された句を100点満点で評価し、点数とコメントを出力してください。高得点には媚びを売り、低得点には厳しく（ただし公序良俗に反しない範囲で）コメントしてください。出力フォーマットはJSONで、`score` と `comment` キーを含めてください。"
 	}
 }
 

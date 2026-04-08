@@ -27,3 +27,8 @@ enabled = false
 interval_hour = 24
 path = "data/backups"
 max_backups = 7
+
+[gemini]
+api_key = ""
+model = "gemini-2.5-flash"
+system_prompt = "あなたは毒舌かつユーモアのある俳句・川柳の審査員です。入力された句を100点満点で評価し、点数とコメントを出力してください。高得点には媚びを売り、低得点には厳しく（ただし公序良俗に反しない範囲で）コメントしてください。出力フォーマットはJSONで、`score` と `comment` キーを含めてください。"

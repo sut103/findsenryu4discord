@@ -1,0 +1,35 @@
+{
+	"name": "FindSenryu4Discord Dev",
+	"image": "mcr.microsoft.com/devcontainers/go:1.24-bookworm",
+	"features": {
+		"ghcr.io/devcontainers/features/common-utils:1": {
+			"installZsh": true,
+			"configureZshAsDefaultShell": true,
+			"makePy3Default": true
+		},
+		"ghcr.io/devcontainers/features/node:1": {
+			"version": "latest"
+		}
+	},
+	"mounts": [
+		"source=${localEnv:HOME}/.gemini,target=/home/vscode/.gemini,type=bind"
+	],
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"golang.Go",
+				"tamasfe.even-better-toml",
+				"editorconfig.editorconfig"
+			],
+			"settings": {
+				"go.toolsManagement.checkForUpdates": "proxy",
+				"go.useLanguageServer": true,
+				"go.formatTool": "gofmt",
+				"go.lintTool": "staticcheck"
+			}
+		}
+	},
+	"remoteUser": "vscode",
+	"postCreateCommand": "go mod download && go install github.com/air-verse/air@latest && sudo npm install -g @google/gemini-cli",
+	"forwardPorts": [9090]
+}

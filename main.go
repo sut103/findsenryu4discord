@@ -23,6 +23,7 @@ import (
 	"github.com/u16-io/FindSenryu4Discord/pkg/metrics"
 	"github.com/u16-io/FindSenryu4Discord/pkg/permissions"
 	"github.com/u16-io/FindSenryu4Discord/service"
+	"github.com/u16-io/FindSenryu4Discord/pkg/gemini"
 
 	"github.com/0x307e/go-haiku"
 	"github.com/bwmarrin/discordgo"
@@ -32,6 +33,7 @@ import (
 var (
 	startTime       time.Time
 	adminNotifier   *adminnotify.Manager
+	geminiClient    *gemini.Client
 	botReady        atomic.Bool
 	guildCacheTimer atomic.Pointer[time.Timer]
 	allSessions     []*discordgo.Session
@@ -134,6 +136,18 @@ func main() {
 		"log_level", conf.Log.Level,
 		"db_driver", conf.Database.Driver,
 	)
+
+	if conf.Gemini.APIKey != "" {
+		ctx := context.Background()
+		client, err := gemini.NewClient(ctx, conf.Gemini.APIKey, conf.Gemini.Model, conf.Gemini.SystemPrompt)
+		if err != nil {
+			logger.Error("Failed to initialize Gemini client", "error", err)
+		} else {
+			geminiClient = client
+			logger.Info("Gemini client initialized")
+			defer geminiClient.Close()
+		}
+	}
 
 	// Initialize database
 	if err := db.Init(); err != nil {
@@ -544,11 +558,18 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 				if spoiler {
 					replyText = fmt.Sprintf("川柳を検出しました！\n||「%s」||", h[0])
 				}
-				if _, err := s.ChannelMessageSendReply(
+
+				scoringEnabled := geminiClient != nil
+				if scoringEnabled {
+					replyText += "\n*(採点中...)*"
+				}
+
+				sentMsg, err := s.ChannelMessageSendReply(
 					m.ChannelID,
 					replyText,
 					m.Reference(),
-				); err != nil {
+				)
+				if err != nil {
 					logger.Warn("Failed to send senryu reply", "error", err, "channel_id", m.ChannelID)
 					// 返信に失敗した場合、保存した川柳を削除して整合性を保つ
 					if delErr := service.DeleteSenryu(int(created.ID), m.GuildID); delErr != nil {
@@ -565,6 +586,28 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 							logger.Warn("Auto-muted channel due to missing Bot permissions", "channel_id", m.ChannelID, "server_id", m.GuildID)
 						}
 					}
+				} else if scoringEnabled && sentMsg != nil {
+					go func(msg *discordgo.Message, senryu model.Senryu, fullText string, originalReply string) {
+						ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+						defer cancel()
+
+						score, err := geminiClient.ScoreSenryu(ctx, fullText)
+						if err != nil {
+							logger.Error("Failed to score senryu", "error", err)
+							newText := strings.Replace(originalReply, "*(採点中...)*", "*(採点失敗)*", 1)
+							s.ChannelMessageEdit(msg.ChannelID, msg.ID, newText)
+							return
+						}
+
+						if err := service.UpdateSenryuScore(int(senryu.ID), senryu.ServerID, score.Score, score.Comment); err != nil {
+							logger.Error("Failed to update senryu score in DB", "error", err)
+							return
+						}
+
+						resultText := fmt.Sprintf("\n**採点結果**: %d点\n*「%s」*", score.Score, score.Comment)
+						newText := strings.Replace(originalReply, "\n*(採点中...)*", resultText, 1)
+						s.ChannelMessageEdit(msg.ChannelID, msg.ID, newText)
+					}(sentMsg, created, h[0], replyText)
 				}
 			}
 		}
