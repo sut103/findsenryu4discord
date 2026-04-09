@@ -31,9 +31,8 @@ type Config struct {
 
 // GeminiConfig holds Gemini API configuration
 type GeminiConfig struct {
-	APIKey       string `koanf:"api_key"`
-	Model        string `koanf:"model"`
-	SystemPrompt string `koanf:"system_prompt"`
+	APIKey string `koanf:"api_key"`
+	Model  string `koanf:"model"`
 }
 
 // DiscordConfig holds Discord-related configuration
@@ -57,11 +56,11 @@ type LogConfig struct {
 
 // AdminConfig holds admin-related configuration
 type AdminConfig struct {
-	OwnerIDs          []string `koanf:"owner_ids"`          // Bot admin Discord IDs
-	GuildID           string   `koanf:"guild_id"`           // Guild ID for admin commands
-	LogChannelID      string   `koanf:"log_channel_id"`     // Real-time notification channel (guild join/leave)
-	ReportChannelID   string   `koanf:"report_channel_id"`  // Daily report channel
-	ContactChannelID  string   `koanf:"contact_channel_id"` // Contact notification channel (future use)
+	OwnerIDs         []string `koanf:"owner_ids"`          // Bot admin Discord IDs
+	GuildID          string   `koanf:"guild_id"`           // Guild ID for admin commands
+	LogChannelID     string   `koanf:"log_channel_id"`     // Real-time notification channel (guild join/leave)
+	ReportChannelID  string   `koanf:"report_channel_id"`  // Daily report channel
+	ContactChannelID string   `koanf:"contact_channel_id"` // Contact notification channel (future use)
 }
 
 // ServerConfig holds HTTP server configuration
@@ -145,9 +144,6 @@ func setDefaults(c *Config) {
 	}
 	if c.Gemini.Model == "" {
 		c.Gemini.Model = "gemini-2.5-flash"
-	}
-	if c.Gemini.SystemPrompt == "" {
-		c.Gemini.SystemPrompt = "あなたは毒舌かつユーモアのある俳句・川柳の審査員です。以下の4つの基準で入力された句を100点満点で評価し、点数とコメントを出力してください。\n1. 【省略の美】説明しすぎず、事象の核のみを提示して余韻を残しているか。\n2.  【独自の視点】ありきたりな表現（凡人ワード）を避け、発見があるか。\n3. 【切れと取り合わせ】異なるイメージの飛躍や対比（二物衝撃）による立体感があるか。\n4. 【韻律】不自然な字余り・字足らずがなく、助詞の使い方が適切か。\n高得点には媚びを売り、低得点には厳しく（ただし公序良俗に反しない範囲で）コメントしてください。コメントは極めて端的に（一言程度）出力してください。出力フォーマットはJSONで、`score` と `comment` キーを含めてください。"
 	}
 }
 

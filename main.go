@@ -18,12 +18,12 @@ import (
 	"github.com/u16-io/FindSenryu4Discord/model"
 	"github.com/u16-io/FindSenryu4Discord/pkg/adminnotify"
 	"github.com/u16-io/FindSenryu4Discord/pkg/backup"
+	"github.com/u16-io/FindSenryu4Discord/pkg/gemini"
 	"github.com/u16-io/FindSenryu4Discord/pkg/health"
 	"github.com/u16-io/FindSenryu4Discord/pkg/logger"
 	"github.com/u16-io/FindSenryu4Discord/pkg/metrics"
 	"github.com/u16-io/FindSenryu4Discord/pkg/permissions"
 	"github.com/u16-io/FindSenryu4Discord/service"
-	"github.com/u16-io/FindSenryu4Discord/pkg/gemini"
 
 	"github.com/0x307e/go-haiku"
 	"github.com/bwmarrin/discordgo"
@@ -139,7 +139,7 @@ func main() {
 
 	if conf.Gemini.APIKey != "" {
 		ctx := context.Background()
-		client, err := gemini.NewClient(ctx, conf.Gemini.APIKey, conf.Gemini.Model, conf.Gemini.SystemPrompt)
+		client, err := gemini.NewClient(ctx, conf.Gemini.APIKey, conf.Gemini.Model)
 		if err != nil {
 			logger.Error("Failed to initialize Gemini client", "error", err)
 		} else {
