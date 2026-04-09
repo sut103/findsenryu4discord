@@ -26,6 +26,13 @@ type Config struct {
 	Admin    AdminConfig    `koanf:"admin"`
 	Server   ServerConfig   `koanf:"server"`
 	Backup   BackupConfig   `koanf:"backup"`
+	Gemini   GeminiConfig   `koanf:"gemini"`
+}
+
+// GeminiConfig holds Gemini API configuration
+type GeminiConfig struct {
+	APIKey string `koanf:"api_key"`
+	Model  string `koanf:"model"`
 }
 
 // DiscordConfig holds Discord-related configuration
@@ -49,11 +56,11 @@ type LogConfig struct {
 
 // AdminConfig holds admin-related configuration
 type AdminConfig struct {
-	OwnerIDs          []string `koanf:"owner_ids"`          // Bot admin Discord IDs
-	GuildID           string   `koanf:"guild_id"`           // Guild ID for admin commands
-	LogChannelID      string   `koanf:"log_channel_id"`     // Real-time notification channel (guild join/leave)
-	ReportChannelID   string   `koanf:"report_channel_id"`  // Daily report channel
-	ContactChannelID  string   `koanf:"contact_channel_id"` // Contact notification channel (future use)
+	OwnerIDs         []string `koanf:"owner_ids"`          // Bot admin Discord IDs
+	GuildID          string   `koanf:"guild_id"`           // Guild ID for admin commands
+	LogChannelID     string   `koanf:"log_channel_id"`     // Real-time notification channel (guild join/leave)
+	ReportChannelID  string   `koanf:"report_channel_id"`  // Daily report channel
+	ContactChannelID string   `koanf:"contact_channel_id"` // Contact notification channel (future use)
 }
 
 // ServerConfig holds HTTP server configuration
@@ -134,6 +141,9 @@ func setDefaults(c *Config) {
 	}
 	if c.Backup.MaxBackups == 0 {
 		c.Backup.MaxBackups = 7
+	}
+	if c.Gemini.Model == "" {
+		c.Gemini.Model = "gemini-2.5-flash"
 	}
 }
 

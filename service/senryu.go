@@ -304,3 +304,36 @@ func GetServerStats(serverID string) (ServerStats, error) {
 
 	return stats, nil
 }
+
+// UpdateSenryuScore updates the score and comment for a senryu
+func UpdateSenryuScore(id int, serverID string, score int, comment string) error {
+	metrics.RecordDatabaseOperation("update_senryu_score")
+
+	result := db.DB.Model(&model.Senryu{}).
+		Where("id = ? AND server_id = ?", id, serverID).
+		Updates(map[string]interface{}{
+			"score":   score,
+			"comment": comment,
+		})
+
+	if result.Error != nil {
+		metrics.RecordError("database")
+		logger.Error("Failed to update senryu score",
+			"error", result.Error,
+			"id", id,
+			"server_id", serverID,
+		)
+		return errors.Wrap(result.Error, "failed to update senryu score")
+	}
+
+	if result.RowsAffected == 0 {
+		return ErrSenryuNotFound
+	}
+
+	logger.Debug("Senryu score updated",
+		"id", id,
+		"server_id", serverID,
+		"score", score,
+	)
+	return nil
+}

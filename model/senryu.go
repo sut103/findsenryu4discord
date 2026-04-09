@@ -11,6 +11,8 @@ type Senryu struct {
 	Nakasichi string    `gorm:"column:nakasichi"`
 	Simogo    string    `gorm:"column:simogo"`
 	Spoiler   *bool     `gorm:"column:spoiler;not null"`
+	Score     *int      `gorm:"column:score"`
+	Comment   *string   `gorm:"column:comment"`
 	CreatedAt time.Time `gorm:"column:created_at"`
 }
 
